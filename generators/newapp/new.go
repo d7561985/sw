@@ -1,11 +1,13 @@
 package newapp
 
 import (
-	"dima/sw/generators/buffalo"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego/swagger"
 	"github.com/beego/bee/logger"
+	"github.com/d7561985/sw/generators/buffalo"
+	"github.com/sirupsen/logrus"
+	"go/ast"
 	"go/parser"
 	"go/token"
 	"gopkg.in/yaml.v2"
@@ -52,19 +54,18 @@ func (g *Generator) Validate() error {
 
 // Run ...
 func (g *Generator) Run(dirpath string) error {
-	return GenerateDocs(dirpath, g.gen)
+	return g.GenerateDocs(dirpath)
 }
 
 // GenerateDocs generates documentations from given path.
-func GenerateDocs(curpath string, gen Gen) error {
-
+func (g *Generator) GenerateDocs(curpath string) error {
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, gen.RootPath(curpath), nil, parser.ParseComments)
+	f, err := parser.ParseFile(fset, g.gen.RootPath(curpath), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("===>>", gen.RootPath(curpath))
+	fmt.Println("===>>", g.gen.RootPath(curpath))
 
 	rootapi.Infos = swagger.Information{}
 	rootapi.SwaggerVersion = "2.0"
@@ -160,6 +161,8 @@ func GenerateDocs(curpath string, gen Gen) error {
 		}
 	}
 
+	g.Models(curpath, "qq")
+
 	os.Mkdir(path.Join(curpath, "swagger"), 0755)
 	fd, err := os.Create(path.Join(curpath, "swagger", "swagger.json"))
 	if err != nil {
@@ -230,4 +233,68 @@ func getparams(str string) []string {
 		r = append(r, string(s))
 	}
 	return r
+}
+
+// Models ...
+func (g *Generator) Models(curpath, pkgpath string) error {
+	m := g.gen.ModelPath(curpath)
+
+	if _, err := os.Stat(m); err != nil {
+		return err
+	}
+
+	fset := token.NewFileSet()
+	f, err := parser.ParseDir(fset, m, func(info os.FileInfo) bool {
+		name := info.Name()
+		return !info.IsDir() && !strings.HasPrefix(name, ".") && !strings.HasSuffix(name, "_test.go") && strings.HasSuffix(name, ".go")
+	}, parser.ParseComments)
+
+	if err != nil {
+		return err
+	}
+
+	for x1, pkg := range f {
+		for x2, fl := range pkg.Files {
+			log.Println(x1, x2)
+			for _, d := range fl.Decls {
+				switch specDecl := d.(type) {
+				case *ast.FuncDecl:
+					//logrus.Infof("FuncDecl: %s", specDecl.Name)
+					if specDecl.Recv != nil && len(specDecl.Recv.List) > 0 {
+						if t, ok := specDecl.Recv.List[0].Type.(*ast.StarExpr); ok {
+							// Parse controller method
+							parserComments(specDecl, fmt.Sprint(t.X), pkgpath)
+						}
+					}
+				case *ast.GenDecl:
+					if specDecl.Tok != token.TYPE {
+						continue
+					}
+
+					for _, s := range specDecl.Specs {
+						t := s.(*ast.TypeSpec)
+						_, ok := t.Type.(*ast.StructType)
+						if !ok {
+							continue
+						}
+
+						// our crude AIM
+						logrus.Infof("EEE: %s", t.Name.Name)
+					}
+
+				default:
+					logrus.Infof("==>>> %T", d)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func genModels(f *ast.FuncDecl, controllerName, pkgpath string) error {
+	return nil
+}
+
+func parserComments(f *ast.FuncDecl, controllerName, pkgpath string) error {
+	return nil
 }

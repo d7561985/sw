@@ -1,0 +1,16 @@
+<div class="page-header">
+  <h1>Test#Show</h1>
+</div>
+
+<ul class="list-unstyled list-inline">
+  <li class="list-inline-item"><a href="<%= testsPath() %>" class="btn btn-info">Back to all Tests</a></li>
+  <li class="list-inline-item"><a href="<%= editTestPath({ test_id: test.ID })%>" class="btn btn-warning">Edit</a></li>
+  <li class="list-inline-item"><a href="<%= testPath({ test_id: test.ID })%>" data-method="DELETE" data-confirm="Are you sure?" class="btn btn-danger">Destroy</a>
+</ul>
+
+<p>
+  <strong>Field1</strong>: <%= test.Field1 %>
+</p>
+<p>
+  <strong>Field2</strong>: <%= test.Field2 %>
+</p>

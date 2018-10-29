@@ -1,7 +1,7 @@
 package buffalo
 
 import (
-	"dima/sw/generators/general"
+	"github.com/d7561985/sw/generators/general"
 	"path/filepath"
 )
 
@@ -10,5 +10,9 @@ type Buffalo struct {
 }
 
 func (*Buffalo) RootPath(curpath string) string {
-	return filepath.Join(curpath, "buffalo", "root.go")
+	return filepath.Join(curpath, "", "main.go")
+}
+
+func (*Buffalo) ModelPath(curpath string) string {
+	return filepath.Join(curpath, "models", "")
 }

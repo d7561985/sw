@@ -1,0 +1,5 @@
+create_table("test1s") {
+	t.Column("id", "uuid", {"primary": true})
+	t.Column("field_1", "integer", {})
+	t.Column("field_2", "decimal", {})
+}

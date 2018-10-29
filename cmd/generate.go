@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"dima/sw/generators/newapp"
 	"fmt"
+	"github.com/d7561985/sw/generators/newapp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
