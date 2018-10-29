@@ -1,7 +1,7 @@
 package buffalo
 
 import (
-	"dima/sw/generators/general"
+	"github.com/d7561985/sw/generators/general"
 	"path/filepath"
 )
 

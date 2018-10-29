@@ -1,11 +1,11 @@
 package newapp
 
 import (
-	"dima/sw/generators/buffalo"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego/swagger"
 	"github.com/beego/bee/logger"
+	"github.com/d7561985/sw/generators/buffalo"
 	"go/parser"
 	"go/token"
 	"gopkg.in/yaml.v2"
