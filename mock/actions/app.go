@@ -60,8 +60,11 @@ func App() *buffalo.App {
 
 		app.GET("/", HomeHandler)
 
-		app.Resource("/tests", TestsResource{})
-		app.Resource("/test/test1s", TestTest1sResource{})
+		v1 := app.Group("/v1")
+		{
+			v1.Resource("/tests", TestsResource{})
+			v1.Resource("/test/test1s", TestTest1sResource{})
+		}
 	}
 
 	return app
