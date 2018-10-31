@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -36,7 +37,7 @@ import (
 
 	"github.com/astaxie/beego/swagger"
 	"github.com/astaxie/beego/utils"
-	beeLogger "github.com/beego/bee/logger"
+	"github.com/beego/bee/logger"
 	bu "github.com/beego/bee/utils"
 )
 
@@ -151,7 +152,7 @@ func parsePackageFromDir(path string) error {
 func GenerateDocs(curpath string) {
 	fset := token.NewFileSet()
 
-	f, err := parser.ParseFile(fset, filepath.Join(curpath, "routers", "router.go"), nil, parser.ParseComments)
+	f, err := parser.ParseFile(fset, filepath.Join(curpath, "actions", "app.go"), nil, parser.ParseComments)
 	if err != nil {
 		beeLogger.Log.Fatalf("Error while parsing router.go: %s", err)
 	}
@@ -249,6 +250,26 @@ func GenerateDocs(curpath string) {
 			}
 		}
 	}
+	{
+		fs := token.NewFileSet()
+		v, err := parser.ParseDir(fs, path.Join(curpath, "actions"), func(info os.FileInfo) bool {
+			return true
+		}, parser.ParseComments)
+
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+
+		for name, pck := range v {
+			for filePath, f := range pck.Files {
+				analizePath(path.Dir(filePath), name)
+				for _, spk := range f.Decls {
+					_ = spk.End()
+				}
+			}
+		}
+	}
 	// Analyse controller package
 	for _, im := range f.Imports {
 		localName := ""
@@ -257,6 +278,7 @@ func GenerateDocs(curpath string) {
 		}
 		analyseControllerPkg(path.Join(curpath, "vendor"), localName, im.Path.Value)
 	}
+
 	for _, d := range f.Decls {
 		switch specDecl := d.(type) {
 		case *ast.FuncDecl:
@@ -452,10 +474,14 @@ func analyseControllerPkg(vendorPath, localName, pkgpath string) {
 		beeLogger.Log.Fatalf("Package '%s' does not exist in the GOPATH or vendor path", pkgpath)
 	}
 
+	analizePath(pkgRealpath, pkgpath)
+}
+
+func analizePath(pkgRealpath, pkgpath string) {
 	fileSet := token.NewFileSet()
 	astPkgs, err := parser.ParseDir(fileSet, pkgRealpath, func(info os.FileInfo) bool {
 		name := info.Name()
-		return !info.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go")
+		return !info.IsDir() && !strings.HasPrefix(name, ".") && !strings.HasSuffix(name, "_test.go") && strings.HasSuffix(name, ".go")
 	}, parser.ParseComments)
 	if err != nil {
 		beeLogger.Log.Fatalf("Error while parsing dir at '%s': %s", pkgpath, err)
@@ -465,7 +491,12 @@ func analyseControllerPkg(vendorPath, localName, pkgpath string) {
 			for _, d := range fl.Decls {
 				switch specDecl := d.(type) {
 				case *ast.FuncDecl:
+
 					if specDecl.Recv != nil && len(specDecl.Recv.List) > 0 {
+						logrus.Infoln("=>> ", specDecl.Name.Name)
+
+						//parserComments(specDecl, fmt.Sprint(spe), pkgpath)
+
 						if t, ok := specDecl.Recv.List[0].Type.(*ast.StarExpr); ok {
 							// Parse controller method
 							parserComments(specDecl, fmt.Sprint(t.X), pkgpath)

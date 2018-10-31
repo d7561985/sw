@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"dima/bfl/models"
+	"github.com/d7561985/sw/mock/models"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"

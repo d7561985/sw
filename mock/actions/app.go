@@ -1,3 +1,10 @@
+// @APIVersion 1.0.0
+// @Title buffalo Test API
+// @Description buffalo has a very cool tools to autogenerate documents for your API
+// @Contact test@tdest.com
+// @TermsOfServiceUrl http://beego.me/
+// @License Apache 2.0
+// @LicenseUrl http://www.apache.org/licenses/LICENSE-2.0.html
 package actions
 
 import (
@@ -7,7 +14,7 @@ import (
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
 
-	"dima/bfl/models"
+	"github.com/d7561985/sw/mock/models"
 
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	contenttype "github.com/gobuffalo/mw-contenttype"

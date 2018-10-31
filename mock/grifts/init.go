@@ -1,7 +1,7 @@
 package grifts
 
 import (
-	"dima/bfl/actions"
+	"github.com/d7561985/sw/mock/actions"
 
 	"github.com/gobuffalo/buffalo"
 )
